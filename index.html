@@ -81,7 +81,32 @@ let products = [
    short:"Pure Blooming Rangoli Silk • Kurta + Dupatta + Trouser • Fully Stitched",
    sizes:"XS, S, M, L, XL, XXL"
  }
-];
+];const SHEET_URL = "https://docs.google.com/spreadsheets/d/1xAG1m65ZfL1zpeSK7P1vSrk6kvw_37m6HyRJEn_nZBM/gviz/tq?tqx=out:json&sheet=Sheet1";
+async function loadProductsFromSheet(){
+  try{
+    const res = await fetch(SHEET_URL);
+    const text = await res.text();
+    const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    const rows = json.table.rows || [];
+
+    products = rows.map(r => {
+      const c = r.c || [];
+      return {
+        id: c[0]?.v ?? '',
+        name: c[1]?.v ?? '',
+        price: Number(c[2]?.v ?? 0),
+        dept: c[3]?.v ?? '',
+        sizes: c[4]?.v ?? '',
+        short: c[5]?.v ?? '',
+        image: c[6]?.v ?? ''
+      };
+    }).filter(p => p.id && p.name);
+
+    renderProducts();
+  }catch(e){
+    console.error('Sheet load failed:', e);
+  }
+} 
 let cart=JSON.parse(localStorage.getItem('pf_cart')||'[]');
 let currentDept='All';
 
@@ -169,6 +194,7 @@ async function submitCustomer(e){
 function openCart(){document.getElementById('cartOverlay').style.display='block';renderCart()}
 function closeCart(){document.getElementById('cartOverlay').style.display='none'}
 save();renderProducts();
+ loadProductsFromSheet();
 </script>
 
 <div id="checkoutModal" class="overlay">
