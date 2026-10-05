@@ -98,7 +98,12 @@ async function loadProductsFromSheet(){
         dept: c[3]?.v ?? '',
         sizes: c[4]?.v ?? '',
         short: c[5]?.v ?? '',
-        image: c[6]?.v ?? ''
+       images: String(c[6]?.v ?? '')
+  .split(',')
+  .map(x => x.trim())
+  .filter(Boolean)
+  .filter((x,i,a) => a.indexOf(x) === i),
+image: String(c[6]?.v ?? '').split(',')[0]?.trim() || ''
       };
     }).filter(p => p.id && p.name);
 
@@ -114,7 +119,12 @@ function renderProducts(){
  const list=currentDept==='All'?products:products.filter(p=>p.dept===currentDept);
  document.getElementById('productsGrid').innerHTML=list.map(p=>`
  <div class="product">
-   <div class="pimg" style="height:320px;background:#f7f2f3;overflow:hidden">
+   <div class="pimg"
+style="height:320px;background:#f7f2f3;overflow:hidden;cursor:pointer"
+onclick='pfOpenGallery(${JSON.stringify(p.images || [p.image])},0)'>
+<img src="${p.image}" alt="${p.name}"
+style="width:100%;height:100%;object-fit:cover">
+</div> style="height:320px;background:#f7f2f3;overflow:hidden">
      <img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover">
    </div>
    <div class="pbody">
@@ -243,5 +253,171 @@ save();renderProducts();
     </div>
   </div>
 </div>
+<style>
+#pfLightbox{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  background:rgba(0,0,0,.92);
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
 
+#pfLightbox img{
+  max-width:90vw;
+  max-height:85vh;
+  object-fit:contain;
+  cursor:zoom-in;
+  transition:transform .2s ease;
+  user-select:none;
+}
+
+#pfClose,
+#pfPrev,
+#pfNext{
+  position:absolute;
+  color:#fff;
+  background:rgba(0,0,0,.5);
+  border:0;
+  cursor:pointer;
+  z-index:2;
+}
+
+#pfClose{
+  top:15px;
+  right:20px;
+  font-size:32px;
+  width:45px;
+  height:45px;
+  border-radius:50%;
+}
+
+#pfPrev,
+#pfNext{
+  top:50%;
+  transform:translateY(-50%);
+  font-size:40px;
+  width:55px;
+  height:70px;
+}
+
+#pfPrev{left:15px;}
+#pfNext{right:15px;}
+
+#pfCount{
+  position:absolute;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  color:#fff;
+  font-size:15px;
+  background:rgba(0,0,0,.5);
+  padding:6px 12px;
+  border-radius:20px;
+}
+</style>
+
+<div id="pfLightbox">
+  <button id="pfClose" type="button">&times;</button>
+  <button id="pfPrev" type="button">&#10094;</button>
+
+  <img id="pfGalleryImg" src="" alt="Product image">
+
+  <button id="pfNext" type="button">&#10095;</button>
+  <div id="pfCount"></div>
+</div>
+
+<script>
+let pfGalleryImages = [];
+let pfGalleryIndex = 0;
+let pfZoomLevel = 1;
+
+window.pfOpenGallery = function(images,index){
+  pfGalleryImages = Array.isArray(images)
+    ? images.filter(Boolean)
+    : [];
+
+  if(!pfGalleryImages.length) return;
+
+  pfGalleryIndex = Math.max(
+    0,
+    Math.min(index || 0, pfGalleryImages.length - 1)
+  );
+
+  pfZoomLevel = 1;
+
+  document.getElementById('pfLightbox').style.display = 'flex';
+
+  pfRenderGallery();
+};
+
+function pfRenderGallery(){
+  const img = document.getElementById('pfGalleryImg');
+
+  img.src = pfGalleryImages[pfGalleryIndex];
+  img.style.transform = 'scale(' + pfZoomLevel + ')';
+
+  document.getElementById('pfCount').textContent =
+    (pfGalleryIndex + 1) + ' / ' + pfGalleryImages.length;
+}
+
+document.getElementById('pfClose').onclick = function(){
+  document.getElementById('pfLightbox').style.display = 'none';
+};
+
+document.getElementById('pfPrev').onclick = function(){
+  if(!pfGalleryImages.length) return;
+
+  pfGalleryIndex =
+    (pfGalleryIndex - 1 + pfGalleryImages.length)
+    % pfGalleryImages.length;
+
+  pfZoomLevel = 1;
+  pfRenderGallery();
+};
+
+document.getElementById('pfNext').onclick = function(){
+  if(!pfGalleryImages.length) return;
+
+  pfGalleryIndex =
+    (pfGalleryIndex + 1)
+    % pfGalleryImages.length;
+
+  pfZoomLevel = 1;
+  pfRenderGallery();
+};
+
+document.getElementById('pfGalleryImg').onclick = function(){
+  pfZoomLevel =
+    pfZoomLevel === 1 ? 2 : 1;
+
+  this.style.transform = 'scale(' + pfZoomLevel + ')';
+};
+
+document.getElementById('pfLightbox').onclick = function(e){
+  if(e.target.id === 'pfLightbox'){
+    document.getElementById('pfLightbox').style.display = 'none';
+  }
+};
+
+document.addEventListener('keydown',function(e){
+  const box = document.getElementById('pfLightbox');
+
+  if(box.style.display !== 'flex') return;
+
+  if(e.key === 'Escape'){
+    box.style.display = 'none';
+  }
+
+  if(e.key === 'ArrowLeft'){
+    document.getElementById('pfPrev').click();
+  }
+
+  if(e.key === 'ArrowRight'){
+    document.getElementById('pfNext').click();
+  }
+});
+</script>`
 </body></html>
