@@ -51,7 +51,7 @@
   <select id="pCategory">
     <option value="Women">Women's Wear</option>
     <option value="Men">Men's Wear</option>
-    <option value="Kids">Kids Wear</option>
+    <option value="Ki.ds">Kids Wear</option>
     <option value="Accessories">Accessories</option>
   </select>
   
@@ -60,22 +60,26 @@
 </div>
 
 <script>
-// CONFIGURATION: Aapka Secret ID aur Password
-const ADMIN_USER = "admin";       // Aapka Login ID
-const ADMIN_PASS = "pooja123";    // Aapka Password
+// CONFIGURATION (Aapka ID aur Password Yahan Hai)
+const ADMIN_USER = "admin";       // <-- Yahan apna ID likhein
+const ADMIN_PASS = "pooja123";    // <-- Yahan apna Password likhein
 
-// Apps Script URL (Agle step me milne par yahan paste karenge)
+// Apps Script URL (Agle step me add karenge)
 const SCRIPT_URL = "YOUR_APPS_SCRIPT_URL_HERE"; 
 
 function login() {
-  const u = document.getElementById('username').value.trim();
+  // Mobile browser ke extra space aur capital/small letters ki issue ko automatic handle karega
+  const u = document.getElementById('username').value.trim().toLowerCase();
   const p = document.getElementById('password').value.trim();
   
-  if(u === ADMIN_USER && p === ADMIN_PASS) {
+  const expectedUser = ADMIN_USER.trim().toLowerCase();
+  const expectedPass = ADMIN_PASS.trim();
+  
+  if (u === expectedUser && p === expectedPass) {
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('adminBox').classList.remove('hidden');
   } else {
-    alert("Galat User ID ya Password!");
+    alert("Galat User ID ya Password! Wapas check karein.");
   }
 }
 
@@ -86,7 +90,7 @@ function addProduct() {
   const category = document.getElementById('pCategory').value;
   const statusDiv = document.getElementById('status');
   
-  if(!name || !price || !image) {
+  if (!name || !price || !image) {
     alert("Kripya sari details bharein!");
     return;
   }
