@@ -3,102 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pooja Fashions - Admin Panel</title>
+  <title>Pooja Fashions - Online Store</title>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; display: flex; justify-content: center; }
-    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-    h2 { text-align: center; color: #333; margin-bottom: 20px; }
-    input, select, textarea, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-    textarea { height: 70px; resize: vertical; }
-    button { background-color: #e91e63; color: white; border: none; font-weight: bold; cursor: pointer; }
-    button:hover { background-color: #c2185b; }
-    .hidden { display: none; }
-    #status { font-weight: bold; text-align: center; margin-top: 10px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f8f9fa; color: #333; }
+    header { background-color: #e91e63; color: white; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    header h1 { font-size: 28px; font-weight: bold; }
+    header p { font-size: 14px; margin-top: 5px; opacity: 0.9; }
+
+    .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+    
+    #loading { text-align: center; font-size: 18px; color: #666; margin: 40px 0; }
+    #no-products { text-align: center; font-size: 18px; color: #999; margin: 40px 0; display: none; }
+
+    .product-grid { 
+      display: grid; 
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+      gap: 20px; 
+    }
+
+    .product-card { 
+      background: white; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+
+    .product-img { 
+      width: 100%; 
+      height: 280px; 
+      object-fit: cover; 
+      background-color: #eee;
+    }
+
+    .product-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+    .product-dept { font-size: 12px; color: #888; text-transform: uppercase; font-weight: bold; }
+    .product-title { font-size: 16px; font-weight: 600; margin: 5px 0; color: #222; }
+    .product-size { font-size: 12px; color: #555; margin-bottom: 8px; }
+    .product-desc { font-size: 13px; color: #666; margin-bottom: 12px; line-height: 1.4; flex-grow: 1; }
+    .product-price { font-size: 18px; font-weight: bold; color: #e91e63; margin-bottom: 12px; }
+
+    .buy-btn { 
+      background-color: #25d366; 
+      color: white; 
+      text-decoration: none; 
+      text-align: center; 
+      padding: 10px; 
+      border-radius: 6px; 
+      font-weight: bold; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 8px;
+    }
+    .buy-btn:hover { background-color: #1ebc57; }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <!-- LOGIN FORM -->
-  <div id="loginBox">
-    <h2>Admin Login</h2>
-    <input type="text" id="username" placeholder="User ID">
-    <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Login</button>
-  </div>
+<header>
+  <h1>Pooja Fashions</h1>
+  <p>Latest Traditional & Designer Wear Collection</p>
+</header>
 
-  <!-- PRODUCT ADD FORM -->
-  <div id="adminBox" class="hidden">
-    <h2>Add New Product</h2>
-    <input type="text" id="pName" placeholder="Product Name (e.g. Cotton Designer Saree)">
-    <input type="number" id="pPrice" placeholder="Price (e.g. 999)">
-    <input type="text" id="pDept" placeholder="Department (e.g. Sarees, Lehengas, Kurtis)">
-    <input type="text" id="pSizes" placeholder="Sizes (e.g. Free Size, S, M, L, XL)">
-    <textarea id="pDesc" placeholder="Description (Material, Fabric details, etc.)"></textarea>
-    <input type="text" id="pImage" placeholder="Image Direct Link (from Postimages.org)">
-    
-    <button onclick="addProduct()">Publish Product</button>
-    <div id="status"></div>
-  </div>
+<div class="container">
+  <div id="loading">Products load ho rahe hain... Kripya wait karein ⏳</div>
+  <div id="no-products">Abhi koi products nahi hain. Admin panel se add karein!</div>
+  <div class="product-grid" id="productGrid"></div>
 </div>
 
 <script>
-// CONFIGURATION
-const ADMIN_USER = "admin";       
-const ADMIN_PASS = "pooja123";    
+  // Aapka Apps Script Web App URL
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGPYL6md6DRnIjP3095w4UhrwTM56YBWroYU0raSMcjMuAQ5J20cobEDLHM7U4XtyI/exec";
 
-// Aapka Google Apps Script Web App URL
-https://script.google.com/macros/s/AKfycbxGPYL6md6DRnIjP3095w4UhrwTM56YBWroYU0raSMcjMuAQ5J20cobEDLHM7U4XtyI/exec
-function login() {
-  const u = document.getElementById('username').value.trim().toLowerCase();
-  const p = document.getElementById('password').value.trim();
-  
-  if (u === ADMIN_USER.toLowerCase() && p === ADMIN_PASS) {
-    document.getElementById('loginBox').classList.add('hidden');
-    document.getElementById('adminBox').classList.remove('hidden');
-  } else {
-    alert("Galat User ID ya Password!");
+  // WhatsApp Number (Jaha customer order ka message bhejega)
+  const WHATSAPP_NUMBER = "919000000000"; // <-- Apna 10-digit WhatsApp number 91 ke sath likhein
+
+  function loadProducts() {
+    fetch(SCRIPT_URL)
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = '';
+
+        // Pehli row Header hoti hai (id, name, price...), isliye index 1 se start karenge
+        if (!data || data.length <= 1) {
+          document.getElementById('no-products').style.display = 'block';
+          return;
+        }
+
+        for (let i = 1; i < data.length; i++) {
+          const row = data[i];
+          // Columns: 0:id, 1:name, 2:price, 3:department, 4:sizes, 5:description, 6:images
+          const id = row[0] || '';
+          const name = row[1] || 'Product Name';
+          const price = row[2] || '0';
+          const dept = row[3] || 'General';
+          const sizes = row[4] || '';
+          const desc = row[5] || '';
+          const image = row[6] || 'https://via.placeholder.com/300';
+
+          if (!name && !price) continue; // Khali rows skip karein
+
+          const waMessage = encodeURIComponent(`Namaste Pooja Fashions! Mujhe ye product khareedna hai:\n\n*Product:* ${name}\n*Price:* ₹${price}\n*ID:* ${id}`);
+          const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${waMessage}`;
+
+          const cardHTML = `
+            <div class="product-card">
+              <img src="${image}" class="product-img" alt="${name}" onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
+              <div class="product-info">
+                <div class="product-dept">${dept}</div>
+                <div class="product-title">${name}</div>
+                ${sizes ? `<div class="product-size"><b>Size:</b> ${sizes}</div>` : ''}
+                ${desc ? `<div class="product-desc">${desc}</div>` : ''}
+                <div class="product-price">₹${price}</div>
+                <a href="${waLink}" target="_blank" class="buy-btn">
+                  💬 Order on WhatsApp
+                </a>
+              </div>
+            </div>
+          `;
+          grid.innerHTML += cardHTML;
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching products:', error);
+        document.getElementById('loading').innerText = 'Products load karne me problem aayi. Page refresh karein.';
+      });
   }
-}
 
-function addProduct() {
-  const name = document.getElementById('pName').value.trim();
-  const price = document.getElementById('pPrice').value.trim();
-  const department = document.getElementById('pDept').value.trim();
-  const sizes = document.getElementById('pSizes').value.trim();
-  const description = document.getElementById('pDesc').value.trim();
-  const images = document.getElementById('pImage').value.trim();
-  const statusDiv = document.getElementById('status');
-  
-  if (!name || !price || !images) {
-    alert("Kripya Product Name, Price aur Image Link zaroor bharein!");
-    return;
-  }
-
-  statusDiv.style.color = "orange";
-  statusDiv.innerText = "Uploading Product...";
-
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, price, department, sizes, description, images })
-  })
-  .then(() => {
-    statusDiv.style.color = "green";
-    statusDiv.innerText = "Product Added Successfully! 🎉";
-    document.getElementById('pName').value = "";
-    document.getElementById('pPrice').value = "";
-    document.getElementById('pDept').value = "";
-    document.getElementById('pSizes').value = "";
-    document.getElementById('pDesc').value = "";
-    document.getElementById('pImage').value = "";
-  })
-  .catch(err => {
-    statusDiv.style.color = "red";
-    statusDiv.innerText = "Error! Phir se try karein.";
-  });
-}
+  // Page load hote hi products mangwao
+  loadProducts();
 </script>
 
 </body>
