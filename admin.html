@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pooja Fashions - Admin Panel</title>
+<style>
+  :root { --red: #b40000; --cream: #fff8fa; }
+  body { font-family: Arial, Helvetica, sans-serif; background: var(--cream); margin: 0; padding: 20px; color: #333; }
+  .box { max-width: 420px; margin: 40px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ffd1d8; }
+  h2 { color: var(--red); text-align: center; margin-top: 0; font-size: 24px; }
+  label { font-size: 13px; font-weight: bold; margin-top: 10px; display: block; color: #555; }
+  input, select, button { width: 100%; padding: 12px; margin: 6px 0 14px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
+  input:focus, select:focus { outline: none; border-color: var(--red); }
+  button { background: var(--red); color: #fff; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; font-size: 16px; }
+  button:hover { background: #900000; }
+  .hidden { display: none; }
+  .note { font-size: 12px; color: #777; margin-top: -8px; margin-bottom: 10px; }
+  #status { text-align: center; font-weight: bold; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Login Box -->
+<div class="box" id="loginBox">
+  <h2>Admin Login</h2>
+  <label>User ID</label>
+  <input type="text" id="username" placeholder="Enter User ID">
+  
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Enter Password">
+  
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- Add Product Form -->
+<div class="box hidden" id="adminBox">
+  <h2>Add New Product</h2>
+  
+  <label>Product Name</label>
+  <input type="text" id="pName" placeholder="e.g. Silk Saree">
+  
+  <label>Price (₹)</label>
+  <input type="number" id="pPrice" placeholder="e.g. 1499">
+  
+  <label>Image Link (Postimages.org Direct Link)</label>
+  <input type="text" id="pImage" placeholder="https://i.postimg.cc/...">
+  <div class="note">Postimages.org se <b>Direct Link</b> copy karke yahan paste karein.</div>
+  
+  <label>Category</label>
+  <select id="pCategory">
+    <option value="Women">Women's Wear</option>
+    <option value="Men">Men's Wear</option>
+    <option value="Kids">Kids Wear</option>
+    <option value="Accessories">Accessories</option>
+  </select>
+  
+  <button onclick="addProduct()">Publish Product</button>
+  <div id="status"></div>
+</div>
+
+<script>
+// CONFIGURATION: Aapka Secret ID aur Password
+const ADMIN_USER = "admin";       // Aapka Login ID
+const ADMIN_PASS = "pooja123";    // Aapka Password
+
+// Apps Script URL (Agle step me milne par yahan paste karenge)
+const SCRIPT_URL = "YOUR_APPS_SCRIPT_URL_HERE"; 
+
+function login() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  
+  if(u === ADMIN_USER && p === ADMIN_PASS) {
+    document.getElementById('loginBox').classList.add('hidden');
+    document.getElementById('adminBox').classList.remove('hidden');
+  } else {
+    alert("Galat User ID ya Password!");
+  }
+}
+
+function addProduct() {
+  const name = document.getElementById('pName').value.trim();
+  const price = document.getElementById('pPrice').value.trim();
+  const image = document.getElementById('pImage').value.trim();
+  const category = document.getElementById('pCategory').value;
+  const statusDiv = document.getElementById('status');
+  
+  if(!name || !price || !image) {
+    alert("Kripya sari details bharein!");
+    return;
+  }
+
+  statusDiv.style.color = "orange";
+  statusDiv.innerText = "Uploading Product...";
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ name, price, image, category })
+  })
+  .then(res => res.json())
+  .then(data => {
+    statusDiv.style.color = "green";
+    statusDiv.innerText = "Product Added Successfully! 🎉";
+    document.getElementById('pName').value = "";
+    document.getElementById('pPrice').value = "";
+    document.getElementById('pImage').value = "";
+  })
+  .catch(err => {
+    statusDiv.style.color = "red";
+    statusDiv.innerText = "Error: Google Sheet link connect nahi hua.";
+  });
+}
+</script>
+
+</body>
+</html>
