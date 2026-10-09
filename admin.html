@@ -1,62 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pooja Fashions - Admin Panel</title>
-<style>
-  :root { --red: #b40000; --cream: #fff8fa; }
-  body { font-family: Arial, Helvetica, sans-serif; background: var(--cream); margin: 0; padding: 20px; color: #333; }
-  .box { max-width: 420px; margin: 40px auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ffd1d8; }
-  h2 { color: var(--red); text-align: center; margin-top: 0; font-size: 24px; }
-  label { font-size: 13px; font-weight: bold; margin-top: 10px; display: block; color: #555; }
-  input, select, button { width: 100%; padding: 12px; margin: 6px 0 14px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 15px; }
-  input:focus, select:focus { outline: none; border-color: var(--red); }
-  button { background: var(--red); color: #fff; font-weight: bold; border: none; cursor: pointer; margin-top: 10px; font-size: 16px; }
-  button:hover { background: #900000; }
-  .hidden { display: none; }
-  .note { font-size: 12px; color: #777; margin-top: -8px; margin-bottom: 10px; }
-  #status { text-align: center; font-weight: bold; margin-top: 10px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pooja Fashions - Admin Panel</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px; display: flex; justify-content: center; }
+    .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+    h2 { text-align: center; color: #333; margin-bottom: 20px; }
+    input, select, textarea, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    textarea { height: 70px; resize: vertical; }
+    button { background-color: #e91e63; color: white; border: none; font-weight: bold; cursor: pointer; }
+    button:hover { background-color: #c2185b; }
+    .hidden { display: none; }
+    #status { font-weight: bold; text-align: center; margin-top: 10px; }
+  </style>
 </head>
 <body>
 
-<!-- Login Box -->
-<div class="box" id="loginBox">
-  <h2>Admin Login</h2>
-  <label>User ID</label>
-  <input type="text" id="username" placeholder="Enter User ID">
-  
-  <label>Password</label>
-  <input type="password" id="password" placeholder="Enter Password">
-  
-  <button onclick="login()">Login</button>
-</div>
+<div class="card">
+  <!-- LOGIN FORM -->
+  <div id="loginBox">
+    <h2>Admin Login</h2>
+    <input type="text" id="username" placeholder="User ID">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+  </div>
 
-<!-- Add Product Form -->
-<div class="box hidden" id="adminBox">
-  <h2>Add New Product</h2>
-  
-  <label>Product Name</label>
-  <input type="text" id="pName" placeholder="e.g. Silk Saree">
-  
-  <label>Price (₹)</label>
-  <input type="number" id="pPrice" placeholder="e.g. 1499">
-  
-  <label>Image Link (Postimages.org Direct Link)</label>
-  <input type="text" id="pImage" placeholder="https://i.postimg.cc/...">
-  <div class="note">Postimages.org se <b>Direct Link</b> copy karke yahan paste karein.</div>
-  
-  <label>Category</label>
-  <select id="pCategory">
-    <option value="Women">Women's Wear</option>
-    <option value="Men">Men's Wear</option>
-    <option value="Ki.ds">Kids Wear</option>
-    <option value="Accessories">Accessories</option>
-  </select>
-  
-  <button onclick="addProduct()">Publish Product</button>
-  <div id="status"></div>
+  <!-- PRODUCT ADD FORM -->
+  <div id="adminBox" class="hidden">
+    <h2>Add New Product</h2>
+    <input type="text" id="pName" placeholder="Product Name (e.g. Cotton Designer Saree)">
+    <input type="number" id="pPrice" placeholder="Price (e.g. 999)">
+    <input type="text" id="pDept" placeholder="Department (e.g. Sarees, Lehengas, Kurtis)">
+    <input type="text" id="pSizes" placeholder="Sizes (e.g. Free Size, S, M, L, XL)">
+    <textarea id="pDesc" placeholder="Description (Material, Fabric details, etc.)"></textarea>
+    <input type="text" id="pImage" placeholder="Image Direct Link (from Postimages.org)">
+    
+    <button onclick="addProduct()">Publish Product</button>
+    <div id="status"></div>
+  </div>
 </div>
 
 <script>
@@ -64,59 +47,57 @@
 const ADMIN_USER = "admin";       
 const ADMIN_PASS = "pooja123";    
 
-// Aapka Google Apps Script URL
+// Aapka Google Apps Script Web App URL
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGPYL6md6DRnIjP3095w4UhrwTM56YBWroYU0raSMcjMuAQ5J20cobEDLHM7U4XtyI/exec"; 
 
 function login() {
   const u = document.getElementById('username').value.trim().toLowerCase();
   const p = document.getElementById('password').value.trim();
   
-  const expectedUser = ADMIN_USER.trim().toLowerCase();
-  const expectedPass = ADMIN_PASS.trim();
-  
-  if (u === expectedUser && p === expectedPass) {
+  if (u === ADMIN_USER.toLowerCase() && p === ADMIN_PASS) {
     document.getElementById('loginBox').classList.add('hidden');
     document.getElementById('adminBox').classList.remove('hidden');
   } else {
-    alert("Galat User ID ya Password! Wapas check karein.");
+    alert("Galat User ID ya Password!");
   }
 }
 
 function addProduct() {
   const name = document.getElementById('pName').value.trim();
   const price = document.getElementById('pPrice').value.trim();
-  const image = document.getElementById('pImage').value.trim();
-  const category = document.getElementById('pCategory').value;
+  const department = document.getElementById('pDept').value.trim();
+  const sizes = document.getElementById('pSizes').value.trim();
+  const description = document.getElementById('pDesc').value.trim();
+  const images = document.getElementById('pImage').value.trim();
   const statusDiv = document.getElementById('status');
   
-  if (!name || !price || !image) {
-    alert("Kripya sari details bharein!");
+  if (!name || !price || !images) {
+    alert("Kripya Product Name, Price aur Image Link zaroor bharein!");
     return;
   }
 
   statusDiv.style.color = "orange";
   statusDiv.innerText = "Uploading Product...";
 
-  // Google Sheet me data bhejne ka fixed tarika (CORS Block Fix)
   fetch(SCRIPT_URL, {
     method: "POST",
     mode: "no-cors",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ name, price, image, category })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, price, department, sizes, description, images })
   })
   .then(() => {
-    // Data bina block huye Sheet me chala gaya
     statusDiv.style.color = "green";
     statusDiv.innerText = "Product Added Successfully! 🎉";
     document.getElementById('pName').value = "";
     document.getElementById('pPrice').value = "";
+    document.getElementById('pDept').value = "";
+    document.getElementById('pSizes').value = "";
+    document.getElementById('pDesc').value = "";
     document.getElementById('pImage').value = "";
   })
   .catch(err => {
     statusDiv.style.color = "red";
-    statusDiv.innerText = "Error: Network Issue. Phir se try karein.";
+    statusDiv.innerText = "Error! Phir se try karein.";
   });
 }
 </script>
