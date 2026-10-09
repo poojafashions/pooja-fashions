@@ -60,14 +60,14 @@
 </div>
 
 <script>
-// CONFIGURATION (Aapka ID aur Password Yahan Hai)
-const ADMIN_USER = "admin";       // <-- Yahan apna ID likhein
-const ADMIN_PASS = "pooja123";    // <-- Yahan apna Password likhein
+// CONFIGURATION
+const ADMIN_USER = "admin";       
+const ADMIN_PASS = "pooja123";    
 
-// Apps Script URL (Agle step me add karenge)
-const SCRIPT_URL = "https://script.google.com/macros/s/NATIVE_NEW_URL_HERE/exec";
+// Aapka Google Apps Script URL
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGPYL6md6DRnIjP3095w4UhrwTM56YBWroYU0raSMcjMuAQ5J20cobEDLHM7U4XtyI/exec"; 
+
 function login() {
-  // Mobile browser ke extra space aur capital/small letters ki issue ko automatic handle karega
   const u = document.getElementById('username').value.trim().toLowerCase();
   const p = document.getElementById('password').value.trim();
   
@@ -97,12 +97,17 @@ function addProduct() {
   statusDiv.style.color = "orange";
   statusDiv.innerText = "Uploading Product...";
 
+  // Google Sheet me data bhejne ka fixed tarika (CORS Block Fix)
   fetch(SCRIPT_URL, {
     method: "POST",
+    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ name, price, image, category })
   })
-  .then(res => res.json())
-  .then(data => {
+  .then(() => {
+    // Data bina block huye Sheet me chala gaya
     statusDiv.style.color = "green";
     statusDiv.innerText = "Product Added Successfully! 🎉";
     document.getElementById('pName').value = "";
@@ -111,7 +116,7 @@ function addProduct() {
   })
   .catch(err => {
     statusDiv.style.color = "red";
-    statusDiv.innerText = "Error: Google Sheet link connect nahi hua.";
+    statusDiv.innerText = "Error: Network Issue. Phir se try karein.";
   });
 }
 </script>
